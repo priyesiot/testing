@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>Photos Joiner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+        header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #007BFF;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        input[type="file"]:hover {
+            border-color: #0056b3;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            margin: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background: #218838;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+        .image-preview {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .image-preview img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            margin-top: auto;
+        }
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .share-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+        .share-popup h3 {
+            margin: 0 0 10px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .share-popup a {
+            display: block;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+            text-decoration: none;
+        }
+        .share-popup .facebook { background: #3b5998; }
+        .share-popup .twitter { background: #1da1f2; }
+        .share-popup .whatsapp { background: #25D366; }
+        .share-popup .close { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Photos Joiner</h1>
+        <p>Join multiple images into a single image.</p>
+        <button onclick="location.href='../index.html'"><i class="fas fa-home"></i> Home</button>
+    </header>
+
+    <main>
+        <input type="file" id="image-input" multiple accept="image/*">
+        <button id="join-photos"><i class="fas fa-image"></i> Join Photos</button>
+        <div class="image-preview" id="image-preview">
+            <h2>Joined Image Preview</h2>
+            <img id="preview-img" alt="Joined Image">
+            <a id="download-link" style="display: none;">Download Joined Image</a>
+        </div>
+    </main>
+
+    <div class="share-popup" id="share-popup">
+        <h3>Share Your Image</h3>
+        <a href="#" class="facebook" id="facebook-share">Facebook</a>
+        <a href="#" class="twitter" id="twitter-share">Twitter</a>
+        <a href="#" class="whatsapp" id="whatsapp-share">WhatsApp</a>
+        <a href="#" class="close" id="close-popup">Cancel</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025-26 ::Priyes Ranjan:. All rights reserved.</p>
+        <p>Share Feedback :Priyesranjan@gmail.com</p>
+    </footer>
+
+    <script>
+        document.getElementById('join-photos').addEventListener('click', function() {
+            const files = document.getElementById('image-input').files;
+            const imgPreview = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            const downloadLink = document.getElementById('download-link');
+            const sharePopup = document.getElementById('share-popup');
+
+            if (files.length === 0) {
+                alert("Please select at least one image.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const images = [];
+            let loadedImages = 0;
+
+            Array.from(files).forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        images.push(img);
+                        loadedImages++;
+                        if (loadedImages === files.length) {
+                            const totalWidth = images.reduce((sum, img) => sum + img.width, 0);
+                            const maxHeight = Math.max(...images.map(img => img.height));
+                            canvas.width = totalWidth;
+                            canvas.height = maxHeight;
+
+                            let xOffset = 0;
+                            images.forEach((img) => {
+                                ctx.drawImage(img, xOffset, 0);
+                                xOffset += img.width;
+                            });
+
+                            imgPreview.style.display = 'block';
+                            previewImg.src = canvas.toDataURL('image/png');
+                            downloadLink.href = canvas.toDataURL('image/png');
+                            downloadLink.download = 'joined-image.png';
+                            downloadLink.style.display = 'block';
+
+                            sharePopup.style.display = 'block';
+                            setTimeout(() => {
+                                sharePopup.style.display = 'none';
+                                downloadLink.click();
+                            }, 3000);
+                        }
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        document.getElementById('close-popup').addEventListener('click', function() {
+            document.getElementById('share-popup').style.display = 'none';
+        });
+
+        document.getElementById('facebook-share').addEventListener('click', function() {
+            const imgSrc = document.getElementById('preview-img').src;
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imgSrc)}`;
+            window.open(facebookUrl, '_blank');
+            document.getElementById('share-popup').style.display = 'none';
+        });
+
+        document.getElementById('twitter-share').addEventListener('click', function() {
+            const imgSrc = document.getElementById('preview-img').src;
+            const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(imgSrc)}`;
+            window.open(twitterUrl, '_blank');
+            document.getElementById('share-popup').style.display = 'none';
+        });
+
+        document.getElementById('whatsapp-share').addEventListener('click', function() {
+            const imgSrc = document.getElementById('preview-img').src;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent("Check out this image: " + imgSrc)}`;
+            window.open(whatsappUrl, '_blank');
+            document.getElementById('share-popup').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

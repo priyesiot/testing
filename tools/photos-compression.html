@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>Photos Compression</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compress.js/1.0.5/compress.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+        header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        nav {
+            margin: 10px 0;
+        }
+        nav button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin: 0 5px;
+        }
+        nav button:hover {
+            background: #08d6d6;
+            transform: scale(1.05);
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #007BFF;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        input[type="file"]:hover {
+            border-color: #0056b3;
+        }
+        select {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #007BFF;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            margin: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background: #218838;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #compressed-output {
+            margin-top: 20px;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            margin-top: auto;
+        }
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Photos Compression</h1>
+        <nav>
+            <button onclick="location.href='../index.html'">Home</button>
+        </nav>
+    </header>
+
+    <main>
+        <input type="file" id="image-input" multiple accept="image/*">
+        <select id="compression-level">
+            <option value="0.1">10%</option>
+            <option value="0.2">20%</option>
+            <option value="0.3">30%</option>
+            <option value="0.4">40%</option>
+            <option value="0.5">50%</option>
+            <option value="0.6">60%</option>
+            <option value="0.7">70%</option>
+            <option value="0.8">80%</option>
+            <option value="0.9">90%</option>
+        </select>
+        <button id="compress-photos">Compress Photos</button>
+        <div id="compressed-output"></div>
+    </main>
+
+    <footer>
+        <p>Developed by <strong>Priyes Ranjan</strong></p>
+        <p>Contact: <a href="mailto:priyesranjan@gmail.com">priyesranjan@gmail.com</a></p>
+    </footer>
+
+    <script>
+        document.getElementById('compress-photos').addEventListener('click', async function() {
+            const files = document.getElementById('image-input').files;
+            const compressionLevel = parseFloat(document.getElementById('compression-level').value);
+            if (files.length === 0) {
+                alert("Please select at least one image.");
+                return;
+            }
+
+            const compress = new Compress();
+            const compressedOutput = document.getElementById('compressed-output');
+            compressedOutput.innerHTML = '';
+
+            const images = Array.from(files);
+            const compressedImages = await compress.compress(images, {
+                size: 4, 
+                quality: compressionLevel,
+                maxWidth: 1920,
+                maxHeight: 1920,
+                resize: true
+            });
+
+            compressedImages.forEach((image) => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(image.data);
+                img.style.maxWidth = '100%';
+                compressedOutput.appendChild(img);
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(image.data);
+                link.download = image.filename;
+                link.textContent = 'Download ' + image.filename;
+                compressedOutput.appendChild(link);
+                compressedOutput.appendChild(document.createElement('br'));
+            });
+        });
+    </script>
+</body>
+</html>

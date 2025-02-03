@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>PDF to Image Converter</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+        header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #007BFF;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        input[type="file"]:hover {
+            border-color: #0056b3;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            margin: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background: #218838;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+        .progress {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007BFF;
+            width: 0;
+            transition: width 0.3s;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            margin-top: auto;
+        }
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding:  20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        .modal-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PDF to Image Converter</h1>
+    </header>
+
+    <main>
+        <input type="file" id="pdf-input" multiple accept="application/pdf">
+        <button id="convert-pdfs">Convert PDFs to Images</button>
+        <div id="status"></div>
+        <div class="progress" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <button id="download-button" onclick="downloadImages()" style="display: none;">Download Images as ZIP</button>
+        <button id="home-button" onclick="goHome()">Home</button>
+    </main>
+
+    <footer>
+        <p>Developed by <strong> [Priyes Ranjan]</strong></p>
+        <p>Contact: <a href="mailto:priyesranjan@gmail.com">priyesranjan@gmail.com</a></p>
+    </footer>
+
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Share Your Images</h2>
+            <button class="modal-button" id="whatsapp-button" onclick="shareOnWhatsApp()">Share on WhatsApp</button>
+            <button class="modal-button" id="telegram-button" onclick="shareOnTelegram()">Share on Telegram</button>
+            <button class="modal-button" id="facebook-button" onclick="shareOnFacebook()">Share on Facebook</button>
+            <button class="modal-button" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        let imageDataUris = [];
+
+        document.getElementById('convert-pdfs').addEventListener('click', async function() {
+            const files = document.getElementById('pdf-input').files;
+            const statusDiv = document.getElementById('status');
+            const progressContainer = document.getElementById('progress-container');
+            const downloadButton = document.getElementById('download-button');
+            statusDiv.textContent = '';
+            progressContainer.style.display = 'none';
+            downloadButton.style.display = 'none';
+            imageDataUris = [];
+
+            if (files.length === 0) {
+                alert("Please select at least one PDF file.");
+                return;
+            }
+
+            statusDiv.textContent = 'Converting PDFs to Images...';
+            progressContainer.style.display = 'block';
+            const totalFiles = files.length;
+
+            for (let i = 0; i < totalFiles; i++) {
+                const file = files[i];
+                const pdfDoc = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+                const pageCount = pdfDoc.numPages;
+
+                for (let j = 1; j <= pageCount; j++) {
+                    const page = await pdfDoc.getPage(j);
+                    const viewport = page.getViewport({ scale: 2 });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const context = canvas.getContext('2d');
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    
+                    imageDataUris.push(canvas.toDataURL('image/png'));
+                }
+            }
+
+            statusDiv.textContent = 'PDFs converted to images successfully!';
+            progressContainer.style.display = 'none';
+            downloadButton.style.display = 'block';
+
+            openModal();
+        });
+
+        function openModal() {
+            document.getElementById('shareModal').style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('shareModal').style.display = "none";
+        }
+
+        function shareOnWhatsApp() {
+            const url = `https://wa.me/?text=Check out these images: ${imageDataUris.join(', ')}`;
+            window.open(url, '_blank');
+            closeModal();
+        }
+
+        function shareOnTelegram() {
+            const url = `https://t.me/share/url?url=${encodeURIComponent(imageDataUris.join(', '))}&text=Check out these images`;
+            window.open(url, '_blank');
+            closeModal();
+        }
+
+        function shareOnFacebook() {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imageDataUris.join(', '))}`;
+            window.open(url, '_blank');
+            closeModal();
+        }
+
+        function downloadImages() {
+            const zip = new JSZip();
+            const imgFolder = zip.folder("images");
+
+            imageDataUris.forEach((dataUri, index) => {
+                const base64Data = dataUri.split(',')[1];
+                imgFolder.file(`image_${index + 1}.png`, base64Data, { base64: true });
+            });
+
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                
+                saveAs(content, "images.zip");
+            });
+        }
+
+        function goHome() {
+            window.location.href = '../index.html';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

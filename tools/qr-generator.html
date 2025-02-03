@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+        header {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            position: relative;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+            position: relative;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        nav ul li:hover .dropdown {
+            display: block;
+        }
+        .dropdown {
+            display: none;
+            position: absolute;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .dropdown a {
+            color: #007bff;
+            display: block;
+            padding: 5px 10px;
+        }
+        .dropdown a:hover {
+            background: #f0f0f0;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 400px;
+            text-align: center;
+        }
+        input[type="text"], input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .qr-frame {
+            margin-top: 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            margin-top: auto;
+        }
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .mode-toggle, .share-button {
+            cursor: pointer;
+            margin: 10px;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        .mode-toggle:hover, .share-button:hover {
+            background: #0056b3;
+        }
+        @media (max-width: 600px) {
+            .card {
+                width: 90%;
+            }
+        }
+        .dark-mode {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+        .dark-mode header, .dark-mode footer {
+            background: #444;
+        }
+        .dark-mode button {
+            background: #555;
+        }
+        .dark-mode button:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>QR Code Generator</h1>
+        <p>Contact: <a href="mailto:priyesranjan@gmail.com">priyesranjan@gmail.com</a></p>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="#">Tools</a>
+                    <ul class="dropdown">
+                        <li><a href="qr-generator.html">QR Code Generator</a></li>
+                        <li><a href="photos-to-pdf.html">Photos to PDF</a></li>
+                        <li><a href="pdf-to-photos.html">PDF to Photos</a></li>
+                        <li><a href="pdf-merger.html">PDF Merger</a></li>
+                        <li><a href="photos-joiner.html">Photos Joiner</a></li>
+                        <li><a href="pdf-compression.html">PDF Compression</a></li>
+                        <li><a href="photos-compression.html">Photos Compression</a></li>
+                        <li><a href="quiz-generator.html">Quiz Generator</a></li>
+                        <li><a href="questions-from-pdf.html">Questions from PDF</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="card">
+            <label for="qr-url"><i class="fas fa-link"></i> Enter URL for QR Code:</label>
+            <input type="text" id="qr-url" placeholder="Enter URL here" required>
+            
+            <label for="qr-name"><i class="fas fa-tag"></i> Enter Name for QR Code:</label>
+            <input type="text" id="qr-name" placeholder="Enter name here" required>
+            
+            <label for="qr-size"><i class="fas fa-arrows-alt"></i> Select QR Code Size:</label>
+            <input type="number" id="qr-size" value="200" min="100" max="500"> px
+            
+            <button id="generate-qr"><i class="fas fa-qrcode"></i> Generate QR Code</button>
+            
+            <div class="qr-frame" id="qr-code" style="margin-top: 20px;"></div>
+            <h2 id="qr-section-title" style="display:none; margin-top: 20px;">Generated QR Code:</h2>
+            <div id="qr-name-display" style="margin-top: 5px; font-weight: bold;"></div>
+            <button id="download-qr" style="display:none;"><i class="fas fa-download"></i> Download QR Code</button>
+        </div>
+    </main>
+
+    <div class="mode-toggle" onclick="toggleMode()">🌙</div>
+    <div class="share-button" onclick="sharePage()">Share</div>
+
+    <footer>
+        <p>&copy; 2025-26 NoobCoder. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#generate-qr').click(function() {
+                const url = $('#qr-url').val();
+                const name = $('#qr-name').val();
+                const size = $('#qr-size').val();
+
+                if (url && name) {
+                    $('#qr-code').empty();
+                    $('#qr-section-title').show();
+                    $('#qr-name-display').text(name);
+                    $('#download-qr').show();
+
+                    $('#qr-code').qrcode({
+                        width: size,
+                        height: size,
+                        text: url
+                    });
+                } else {
+                    alert('Please enter both URL and Name.');
+                }
+            });
+
+            $('#download-qr').click(function() {
+                const canvas = $('#qr-code canvas')[0];
+                if (canvas) {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = $('#qr-name').val() + '.png';
+                    link.click();
+                } else {
+                    alert('No QR code generated to download.');
+                }
+            });
+        });
+
+        function toggleMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function sharePage() {
+            const shareText = 'Check out this QR Code Generator!';
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'QR Code Generator',
+                    text: shareText,
+                    url: shareUrl
+                }).catch(console.error);
+            } else {
+                alert('Sharing not supported on this browser.');
+            }
+        }
+    </script>
+</body>
+</html>
